@@ -1,16 +1,35 @@
-<!DOCTYPE html>
-<html lang="es">
-    <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!--[if lte IE 8]><meta http-equiv="X-UA-Compatible" content="chrome=1" /><![endif]-->
-    <title>My First Canvas Game</title>
-    </head>
-    <body>
-        <h1>My First Canvas Game</h1>
-        <p><canvas id="canvas" width="300" height="150" style="background:#999">
-        Canvas not supported by your browser.
-        </canvas></p>
-        <script type="application/javascript" src="game.js"></script>
-    </body>
-</html>
+var canvas = null,
+ctx = null,
+x = 50,
+y = 50;
+window.requestAnimationFrame = (function () {
+return window.requestAnimationFrame ||
+window.mozRequestAnimationFrame ||
+window.webkitRequestAnimationFrame ||
+function (callback) {
+window.setTimeout(callback, 17);
+};
+}());
+function paint(ctx) {
+ctx.fillStyle = '#000';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = '#0f0';
+ctx.fillRect(x, y, 10, 10);
+}
+function act() {
+x += 2;
+if (x > canvas.width) {
+x = 0;
+}
+}
+function run() {
+window.requestAnimationFrame(run);
+act();
+paint(ctx);
+}
+function init() {
+canvas = document.getElementById('canvas');
+ctx = canvas.getContext('2d');
+run();
+}
+window.addEventListener('load', init, false);
