@@ -40,7 +40,6 @@ if (evt.which >= 37 && evt.which <= 40) {
 evt.preventDefault();
 }
 lastPress = evt.which;
-
 }, false);
 function Rectangle(x, y, width, height) {
 this.x = (x === undefined) ? 0 : x;
@@ -122,17 +121,17 @@ ctx.drawImage(img, this.x, this.y);
     ctx.strokeStyle = '#f00';
     food.drawImage(ctx, iFood);
     // Draw score
-    ctx.fillStyle = "#fff";"20px";
-    ctx.fillText('Score: ' + score, 20, 20);
+    ctx.fillStyle = '#fff';
+    ctx.fillText('Score: ' + score, 0, 10);
     // Debug last key pressed
     //ctx.fillText('Last Press: '+lastPress,0,20);
     // Draw pause
     if (pause) {
     ctx.textAlign = 'center';
     if (gameover) {
-    ctx.fillText('Wellcome', 300, 300);
+    ctx.fillText('GAME OVER', 150, 75);
     } else {
-        ctx.fillText('PAUSE', 300, 300);
+        ctx.fillText('PAUSE', 150, 75);
 }
 ctx.textAlign = 'left';
 }
@@ -241,12 +240,12 @@ for (i = 2, l = body.length; i < l; i += 1) {
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
     canvas.width = 600;
-    canvas.height = 600;
+    canvas.height = 300;
     // Load buffer
     buffer = document.createElement('canvas');
     bufferCtx = buffer.getContext('2d');
-    buffer.width = 600;
-    buffer.height = 600;
+    buffer.width = 300;
+    buffer.height = 150;
     // Load assets
     iBody.src = 'assets/body.png';
     iFood.src = 'assets/fruit.png';
