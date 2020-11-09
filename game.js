@@ -19,7 +19,7 @@ highscoresScene = null,
 body = [],
 food = null,
 food2 = null,
-//var wall = [],
+wall = [],
 highscores = [],
 posHighscore = 10,
 dir = 0,
@@ -126,16 +126,21 @@ ctx = canvas.getContext('2d');
 // Load assets
 iBody.src = 'assets/body.png';
 iFood.src = 'assets/fruit.png';
-aEat.src = 'assets/chomp.m4a';
-aDie.src = 'assets/dies.m4a';
+aEat.src = 'assets/chomp.oga';
+aDie.src = 'assets/dies.oga';
 // Create food
 food = new Rectangle(80, 80, 10, 10);
 food2 = new Rectangle(50, 50, 10, 10);
 // Create walls
-//wall.push(new Rectangle(50, 50, 10, 10));
-//wall.push(new Rectangle(50, 100, 10, 10));
-//wall.push(new Rectangle(100, 50, 10, 10));
-//wall.push(new Rectangle(100, 100, 10, 10));
+wall.push(new Rectangle(130, 20, 10, 10));
+wall.push(new Rectangle(130, 50, 10, 10));
+wall.push(new Rectangle(130, 80, 10, 10));
+wall.push(new Rectangle(130, 110, 10, 10));
+wall.push(new Rectangle(160, 110, 10, 10));
+wall.push(new Rectangle(100, 20, 10, 10));
+wall.push(new Rectangle(160, 20, 10, 10));
+wall.push(new Rectangle(100, 110, 10, 10));
+wall.push(new Rectangle(130, 110, 10, 10));
 // Load saved highscores
 if (localStorage.highscores) {
     highscores = localStorage.highscores.split(',');
@@ -190,10 +195,10 @@ if (localStorage.highscores) {
     body[i].drawImage(ctx, iBody);
     }
     // Draw walls
-    //ctx.fillStyle = '#999';
-    //for (i = 0, l = wall.length; i < l; i += 1) {
-    // wall[i].fill(ctx);
-    //}
+    ctx.fillStyle = '#999';
+    for (i = 0, l = wall.length; i < l; i += 1) {
+     wall[i].fill(ctx);
+    }
     // Draw new food
     ctx.fillStyle = '#f00';
     food2.fill(ctx);
@@ -275,25 +280,28 @@ score += 1;
 food.x = random(canvas.width / 10 - 1) * 10;
 food.y = random(canvas.height / 10 - 1) * 10;
 aEat.play();
+send()
 }
 if (body[0].intersects(food2)) {
     score += 1;
     food2.x = random(canvas.width / 10 - 1) * 10;
     food2.y = random(canvas.height / 10 - 1) * 10;
     aEat.play();
+    send()
     }
 // Wall Intersects
-//for (i = 0, l = wall.length; i < l; i += 1) {
-// if (food.intersects(wall[i])) {
-// food.x = random(canvas.width / 10 - 1) * 10;
-// food.y = random(canvas.height / 10 - 1) * 10;
-// }
-//
-// if (body[0].intersects(wall[i])) {
-// gameover = true;
-// pause = true;
-// }
-//}
+for (i = 0, l = wall.length; i < l; i += 1) {
+if (food.intersects(wall[i])) {
+food.x = random(canvas.width / 10 - 1) * 10;
+ food.y = random(canvas.height / 10 - 1) * 10;
+ food2.x = random(canvas.width / 10 - 1) * 10;
+ food2.y = random(canvas.height / 10 - 1) * 10;
+ }
+ if (body[0].intersects(wall[i])) {
+ gameover = true;
+ pause = true;
+}
+}
 // Body Intersects
 for (i = 2, l = body.length; i < l; i += 1) {
 if (body[0].intersects(body[i])) {
@@ -338,6 +346,20 @@ loadScene(gameScene);
 lastPress = null;
 }
 };
+function send(score) {
+var url = "https://jsonplaceholder.typicode.com/posts";
+var data = {Score : score , Name : "player" };
+
+fetch(url, {
+  method: 'POST', 
+  body: JSON.stringify(data), 
+  headers:{
+    'Content-Type': 'application/json'
+  }
+}).then(res => res.json())
+.then(response => console.log('“Score sent successfully”', response))
+.catch(error => console.error('“Error trying to send the score”', error));
+}
 window.addEventListener('load', init, false);
 }(window));
 
@@ -356,3 +378,16 @@ window.addEventListener('load', init, false);
 })
   .then((response) => response.json())
   .then((json) => console.log(json))*/
+/*
+  var url = 'https://example.com/profile';
+var data = score ;
+
+fetch(url, {
+  method: 'POST', // or 'PUT'
+  body: JSON.stringify(data), // data can be `string` or {object}!
+  headers:{
+    'Content-Type': 'application/json'
+  }
+}).then(res => res.json())
+.catch(error => console.error('“Error trying to send the score”', error))
+.then(response => console.log('“Score sent successfully”', response));*/
