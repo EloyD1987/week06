@@ -8,39 +8,39 @@
     KEY_DOWN = 40,
     canvas = null,
     ctx = null,
-    buffer = null,
-    bufferCtx = null,
-    bufferScale = 1,
-    bufferOffsetX = 0,
-    bufferOffsetY = 0,
-    lastPress = null,
-    pause = true,
-    gameover = true,
-    fullscreen = false,
-    body = [],
-    food = null,
+lastPress = null,
+pause = false,
+gameover = false,
+currentScene = 0,
+scenes = [],
+mainScene = null,
+gameScene = null,
+highscoresScene = null,
+body = [],
+food = null,
+food2 = null,
 //var wall = [],
-    dir = 0,
-    score = 0,
-    iBody = new Image(),
-    iFood = new Image(),
-    aEat = new Audio(),
-    aDie = new Audio();
-    
+highscores = [],
+posHighscore = 10,
+dir = 0,
+score = 0,
+iBody = new Image(),
+iFood = new Image(),
+aEat = new Audio(),
+aDie = new Audio();
 window.requestAnimationFrame = (function () {
-    return window.requestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    function (callback) {
-        window.setTimeout(callback, 17);
-    };
+return window.requestAnimationFrame ||
+window.mozRequestAnimationFrame ||
+window.webkitRequestAnimationFrame ||
+function (callback) {
+window.setTimeout(callback, 17);
+};
 }());
 document.addEventListener('keydown', function (evt) {
 if (evt.which >= 37 && evt.which <= 40) {
 evt.preventDefault();
 }
 lastPress = evt.which;
-
 }, false);
 function Rectangle(x, y, width, height) {
 this.x = (x === undefined) ? 0 : x;
@@ -72,42 +72,118 @@ if (img === undefined) {
 window.console.warn('Missing parameters on function drawImage');
 } else {
 if (img.width) {
-ctx.drawImage(img, this.x, this.y);
+    ctx.drawImage(img, this.x, this.y);
 } else {
-    ctx.strokeRect(this.x, this.y, this.width, this.height);
+ctx.strokeRect(this.x, this.y, this.width, this.height);
+}
+}
+}
+};
+function Scene() {
+this.id = scenes.length;
+scenes.push(this);
+}
+Scene.prototype = {
+constructor: Scene,
+load: function () {},
+paint: function (ctx) {},
+act: function () {}
+};
+function loadScene(scene) {
+currentScene = scene.id;
+scenes[currentScene].load();
+}
+function random(max) {
+return ~~(Math.random() * max);
+}
+function addHighscore(score) {
+posHighscore = 0;
+while (highscores[posHighscore] > score && posHighscore < highscores.length) {
+posHighscore += 1;
+}
+highscores.splice(posHighscore, 0, score);
+if (highscores.length > 10) {
+highscores.length = 10;
+}
+localStorage.highscores = highscores.join(',');
+}
+function repaint() {
+window.requestAnimationFrame(repaint);
+if (scenes.length) {
+scenes[currentScene].paint(ctx);
+}
+}
+function run() {
+setTimeout(run, 50);
+if (scenes.length) {
+scenes[currentScene].act();
+}
+}
+function init() {
+// Get canvas and context
+canvas = document.getElementById('canvas');
+ctx = canvas.getContext('2d');
+// Load assets
+iBody.src = 'assets/body.png';
+iFood.src = 'assets/fruit.png';
+aEat.src = 'assets/chomp.m4a';
+aDie.src = 'assets/dies.m4a';
+// Create food
+food = new Rectangle(80, 80, 10, 10);
+food2 = new Rectangle(50, 50, 10, 10);
+// Create walls
+//wall.push(new Rectangle(50, 50, 10, 10));
+//wall.push(new Rectangle(50, 100, 10, 10));
+//wall.push(new Rectangle(100, 50, 10, 10));
+//wall.push(new Rectangle(100, 100, 10, 10));
+// Load saved highscores
+if (localStorage.highscores) {
+    highscores = localStorage.highscores.split(',');
     }
+    // Start game
+    run();
+    repaint();
     }
+    // Main Scene
+    mainScene = new Scene();
+    mainScene.paint = function (ctx) {
+    // Clean canvas
+    ctx.fillStyle = '#030';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Draw title
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText('SNAKE', 150, 60);
+    ctx.fillText('Press Enter', 150, 90);
+    };
+    mainScene.act = function () {
+    // Load next scene
+    if (lastPress === KEY_ENTER) {
+    loadScene(highscoresScene);
+    lastPress = null;
     }
     };
-    function random(max) {
-    return ~~(Math.random() * max);
-    }
-    function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    var w = window.innerWidth / buffer.width;
-    var h = window.innerHeight / buffer.height;
-    bufferScale = Math.min(h, w);
-    bufferOffsetX = (canvas.width - (buffer.width * bufferScale)) / 2;
-    bufferOffsetY = (canvas.height - (buffer.height * bufferScale)) / 2;
-    }
-    function reset() {
+    // Game Scene
+    gameScene = new Scene();
+    gameScene.load = function () {
     score = 0;
     dir = 1;
     body.length = 0;
     body.push(new Rectangle(40, 40, 10, 10));
     body.push(new Rectangle(0, 0, 10, 10));
     body.push(new Rectangle(0, 0, 10, 10));
-    food.x = random(buffer.width / 10 - 1) * 10;
-    food.y = random(buffer.height / 10 - 1) * 10;
+    food.x = random(canvas.width / 10 - 1) * 10;
+    food.y = random(canvas.height / 10 - 1) * 10;
+    food2.x = random(canvas.width / 10 - 1) * 10;
+    food2.y = random(canvas.height / 10 - 1) * 10;
     gameover = false;
-    }
-    function paint(ctx) {
+    };
+    gameScene.paint = function (ctx) {
     var i = 0,
     l = 0;
     // Clean canvas
     ctx.fillStyle = '#030';
-    ctx.fillRect(0, 0, buffer.width, buffer.height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     // Draw player
     ctx.strokeStyle = '#0f0';
     for (i = 0, l = body.length; i < l; i += 1) {
@@ -118,32 +194,35 @@ ctx.drawImage(img, this.x, this.y);
     //for (i = 0, l = wall.length; i < l; i += 1) {
     // wall[i].fill(ctx);
     //}
+    // Draw new food
+    ctx.fillStyle = '#f00';
+    food2.fill(ctx);
     // Draw food
     ctx.strokeStyle = '#f00';
-    food.drawImage(ctx, iFood);
-    // Draw score
-    ctx.fillStyle = "#fff";"20px";
-    ctx.fillText('Score: ' + score, 20, 20);
-    // Debug last key pressed
-    //ctx.fillText('Last Press: '+lastPress,0,20);
-    // Draw pause
-    if (pause) {
-    ctx.textAlign = 'center';
-    if (gameover) {
-    ctx.fillText('Wellcome', 300, 300);
-    } else {
-        ctx.fillText('PAUSE', 300, 300);
-}
+food.drawImage(ctx, iFood);
+// Draw score
+ctx.fillStyle = '#fff';
 ctx.textAlign = 'left';
+ctx.fillText('Score: ' + score, 0, 10);
+// Debug last key pressed
+//ctx.fillText('Last Press: '+lastPress,0,20);
+// Draw pause
+if (pause) {
+ctx.textAlign = 'center';
+if (gameover) {
+ctx.fillText('GAME OVER', 150, 75);
+} else {
+ctx.fillText('PAUSE', 150, 75);
 }
 }
-function act() {
+};
+gameScene.act = function () {
 var i = 0,
 l = 0;
 if (!pause) {
 // GameOver Reset
 if (gameover) {
-reset();
+loadScene(highscoresScene);
 }
 // Move Body
 for (i = body.length - 1; i > 0; i -= 1) {
@@ -193,10 +272,16 @@ body[0].y = canvas.height - body[0].height;
 if (body[0].intersects(food)) {
 body.push(new Rectangle(0, 0, 10, 10));
 score += 1;
-food.x = random(buffer.width / 10 - 1) * 10;
-food.y = random(buffer.height / 10 - 1) * 10;
+food.x = random(canvas.width / 10 - 1) * 10;
+food.y = random(canvas.height / 10 - 1) * 10;
 aEat.play();
 }
+if (body[0].intersects(food2)) {
+    score += 1;
+    food2.x = random(canvas.width / 10 - 1) * 10;
+    food2.y = random(canvas.height / 10 - 1) * 10;
+    aEat.play();
+    }
 // Wall Intersects
 //for (i = 0, l = wall.length; i < l; i += 1) {
 // if (food.intersects(wall[i])) {
@@ -211,59 +296,63 @@ aEat.play();
 //}
 // Body Intersects
 for (i = 2, l = body.length; i < l; i += 1) {
-    if (body[0].intersects(body[i])) {
-    gameover = true;
-    pause = true;
-    aDie.play();
-    }
-    }
-    }
-    // Pause/Unpause
-    if (lastPress === KEY_ENTER) {
-    pause = !pause;
-    lastPress = null;
-    }
-    }
-    function repaint() {
-    window.requestAnimationFrame(repaint);
-    paint(bufferCtx);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height )
-    }
-    function run() {
-    setTimeout(run, 50);
-    act();
-    }
-    function init() {
-    // Get canvas and context
-    canvas = document.getElementById('canvas');
-    ctx = canvas.getContext('2d');
-    canvas.width = 600;
-    canvas.height = 600;
-    // Load buffer
-    buffer = document.createElement('canvas');
-    bufferCtx = buffer.getContext('2d');
-    buffer.width = 600;
-    buffer.height = 600;
-    // Load assets
-    iBody.src = 'assets/body.png';
-    iFood.src = 'assets/fruit.png';
-    aEat.src = 'assets/chomp.m4a';
-    aDie.src = 'assets/dies.m4a';
-    // Create food
-    food = new Rectangle(80, 80, 10, 10);
-    // Create walls
-    //wall.push(new Rectangle(50, 50, 10, 10));
-    //wall.push(new Rectangle(50, 100, 10, 10));
-    //wall.push(new Rectangle(100, 50, 10, 10));
-    //wall.push(new Rectangle(100, 100, 10, 10));
-    // Start game
-resize();
-run();
-repaint();
+if (body[0].intersects(body[i])) {
+gameover = true;
+pause = true;
+aDie.play();
+addHighscore(score);
 }
+}
+}
+// Pause/Unpause
+if (lastPress === KEY_ENTER) {
+pause = !pause;
+lastPress = null;
+}
+};
+// Highscore Scene
+highscoresScene = new Scene();
+highscoresScene.paint = function (ctx) {
+var i = 0,
+l = 0;
+// Clean canvas
+ctx.fillStyle = '#030';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+// Draw title
+ctx.fillStyle = '#fff';
+ctx.textAlign = 'center';
+ctx.fillText('HIGH SCORES', 150, 30);
+// Draw high scores
+ctx.textAlign = 'right';
+for (i = 0, l = highscores.length; i < l; i += 1) {
+if (i === posHighscore) {
+ctx.fillText('*' + highscores[i], 180, 40 + i * 10);
+} else {
+ctx.fillText(highscores[i], 180, 40 + i * 10);
+}
+}};
+highscoresScene.act = function () {
+// Load next scene
+if (lastPress === KEY_ENTER) {
+loadScene(gameScene);
+lastPress = null;
+}
+};
 window.addEventListener('load', init, false);
-window.addEventListener('resize', resize, false);
 }(window));
+
+
+
+/*fetch('https://jsonplaceholder.typicode.com/posts', {
+  method: 'POST',
+  body: JSON.stringify({
+    title: 'foo',
+    body: 'bar',
+    userId: 1,
+  }),
+  headers: {
+    'Content-type': 'application/json; charset=UTF-8',
+  },
+})
+  .then((response) => response.json())
+  .then((json) => console.log(json))*/
