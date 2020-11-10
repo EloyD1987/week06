@@ -26,6 +26,7 @@ dir = 0,
 score = 0,
 iBody = new Image(),
 iFood = new Image(),
+iFood2 = new Image(),
 aEat = new Audio(),
 aDie = new Audio();
 window.requestAnimationFrame = (function () {
@@ -36,6 +37,14 @@ function (callback) {
 window.setTimeout(callback, 17);
 };
 }());
+//resize
+function resize () {
+  var w = window.innerWidth / canvas.width;
+var h = window.innerHeight / canvas.height;
+var scale = Math.min(h, w);
+canvas.style.width = (canvas.width * scale) + 'px';
+canvas.style.height = (canvas.height * scale) + 'px';
+}
 document.addEventListener('keydown', function (evt) {
 if (evt.which >= 37 && evt.which <= 40) {
 evt.preventDefault();
@@ -126,6 +135,7 @@ ctx = canvas.getContext('2d');
 // Load assets
 iBody.src = 'assets/body.png';
 iFood.src = 'assets/fruit.png';
+iFood2.src = 'assets/dolar.png';
 aEat.src = 'assets/chomp.oga';
 aDie.src = 'assets/dies.oga';
 // Create food
@@ -146,6 +156,7 @@ if (localStorage.highscores) {
     highscores = localStorage.highscores.split(',');
     }
     // Start game
+    resize();
     run();
     repaint();
     }
@@ -200,8 +211,8 @@ if (localStorage.highscores) {
      wall[i].fill(ctx);
     }
     // Draw new food
-    ctx.fillStyle = '#f00';
-    food2.fill(ctx);
+    ctx.strokeStyle = '#f00';
+    food2.drawImage(ctx, iFood2);
     // Draw food
     ctx.strokeStyle = '#f00';
 food.drawImage(ctx, iFood);
@@ -360,6 +371,8 @@ fetch(url, {
 .then(response => console.log('“Score sent successfully”', response))
 .catch(error => console.error('“Error trying to send the score”', error));
 }
+window.addEventListener('resize', resize, false);
+
 window.addEventListener('load', init, false);
 }(window));
 
