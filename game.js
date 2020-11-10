@@ -24,6 +24,7 @@
     posHighscore = 10,
     dir = 0,
     score = 0,
+    iHead = new Image(),
     iBody = new Image(),
     iFood = new Image(),
     iFood2 = new Image(),
@@ -53,7 +54,7 @@ document.addEventListener('keydown', function (evt) {
 
   lastPress = evt.which;
 }, false);
-function Rectangle(x, y, width, height) {
+function Rectangle(x, y, width, height) {                      
   this.x = (x === undefined) ? 0 : x;
   this.y = (y === undefined) ? 0 : y;
   this.width = (width === undefined) ? 0 : width;
@@ -61,11 +62,11 @@ function Rectangle(x, y, width, height) {
 }
 Rectangle.prototype = {
   constructor: Rectangle,
-intersects: function (rect) {
+intersects: function (rect) {   
   if (rect === undefined) {
     window.console.warn('Missing parameters on function intersects');
 } else {
-  return (this.x < rect.x + rect.width &&
+  return (this.x < rect.x + rect.width &&    
     this.x + this.width > rect.x &&
     this.y < rect.y + rect.height &&
     this.y + this.height > rect.y);
@@ -135,6 +136,7 @@ function init() {
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
   // Load assets
+  iHead.src = 'assets/head.png'
   iBody.src = 'assets/body.png';
   iFood.src = 'assets/fruit.png';
   iFood2.src = 'assets/dolar.png';
@@ -189,8 +191,8 @@ mainScene.paint = function (ctx) {
     dir = 1;
     body.length = 0;
     body.push(new Rectangle(40, 40, 10, 10));
-    body.push(new Rectangle(0, 0, 10, 10));
-    body.push(new Rectangle(0, 0, 10, 10));
+    //body.push(new Rectangle(0, 0, 10, 10));
+    //body.push(new Rectangle(0, 0, 10, 10));
     food.x = random(canvas.width / 10 - 1) * 10;
     food.y = random(canvas.height / 10 - 1) * 10;
     food2.x = random(canvas.width / 10 - 1) * 10;
@@ -201,7 +203,7 @@ mainScene.paint = function (ctx) {
     var i = 0,
       l = 0;
     // Clean canvas
-    ctx.fillStyle = '#030';
+    ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     // Draw player
     ctx.strokeStyle = '#0f0';
@@ -227,6 +229,7 @@ mainScene.paint = function (ctx) {
     //ctx.fillText('Last Press: '+lastPress,0,20);
     // Draw pause
     if (pause) {
+      ctx.fillStyle = '#030';
       ctx.textAlign = 'center';
       if (gameover) {
         ctx.fillText('GAME OVER', 150, 75);
@@ -313,6 +316,8 @@ gameScene.act = function () {
           food2.y = random(canvas.height / 10 - 1) * 10;
       }
       if (body[0].intersects(wall[i])) {
+        aDie.play();
+        addHighscore(score);
         gameover = true;
         pause = true;
       }
