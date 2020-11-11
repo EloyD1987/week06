@@ -1,6 +1,7 @@
 /*jslint bitwise:true, es5: true */
 (function (window, undefined) {
   'use strict';
+
   var KEY_ENTER = 13,
     KEY_LEFT = 37,
     KEY_UP = 38,
@@ -16,21 +17,25 @@
     mainScene = null,
     gameScene = null,
     highscoresScene = null,
+    //objects
     body = [],
     food = null,
     food2 = null,
     wall = [],
+
     highscores = [],
     posHighscore = 10,
     dir = 0,
     score = 0,
-    iHead = new Image(),
+    // images
+    iWall = new Image(),
     iBody = new Image(),
     iFood = new Image(),
     iFood2 = new Image(),
+    // sound
     aEat = new Audio(),
     aDie = new Audio();
-
+// Compatibility 
 window.requestAnimationFrame = (function () {
   return window.requestAnimationFrame ||
     window.mozRequestAnimationFrame ||
@@ -47,13 +52,14 @@ function resize () {
   canvas.style.width = (canvas.width * scale) + 'px';
   canvas.style.height = (canvas.height * scale) + 'px';
 }
+// move event
 document.addEventListener('keydown', function (evt) {
   if (evt.which >= 37 && evt.which <= 40) {
     evt.preventDefault();
   }
-
   lastPress = evt.which;
 }, false);
+// Class
 function Rectangle(x, y, width, height) {                      
   this.x = (x === undefined) ? 0 : x;
   this.y = (y === undefined) ? 0 : y;
@@ -136,7 +142,7 @@ function init() {
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
   // Load assets
-  iHead.src = 'assets/head.png'
+  iWall.src = 'assets/wall.png'
   iBody.src = 'assets/body.png';
   iFood.src = 'assets/fruit.png';
   iFood2.src = 'assets/dolar.png';
@@ -155,6 +161,14 @@ function init() {
   wall.push(new Rectangle(160, 20, 10, 10));
   wall.push(new Rectangle(100, 110, 10, 10));
   wall.push(new Rectangle(130, 110, 10, 10));
+  wall.push(new Rectangle(290, 140, 10, 10));
+  wall.push(new Rectangle(290, 130, 10, 10));
+  wall.push(new Rectangle(290, 120, 10, 10));
+  wall.push(new Rectangle(280, 120, 10, 10));
+  wall.push(new Rectangle(270, 120, 10, 10));
+  wall.push(new Rectangle(270, 130, 10, 10));
+  wall.push(new Rectangle(270, 140, 10, 10));
+  wall.push(new Rectangle(280, 140, 10, 10));
   // Load saved highscores
   if (localStorage.highscores) {
     highscores = localStorage.highscores.split(',');
@@ -191,8 +205,6 @@ mainScene.paint = function (ctx) {
     dir = 1;
     body.length = 0;
     body.push(new Rectangle(40, 40, 10, 10));
-    //body.push(new Rectangle(0, 0, 10, 10));
-    //body.push(new Rectangle(0, 0, 10, 10));
     food.x = random(canvas.width / 10 - 1) * 10;
     food.y = random(canvas.height / 10 - 1) * 10;
     food2.x = random(canvas.width / 10 - 1) * 10;
@@ -213,7 +225,7 @@ mainScene.paint = function (ctx) {
     // Draw walls
     ctx.fillStyle = '#999';
     for (i = 0, l = wall.length; i < l; i += 1) {
-      wall[i].fill(ctx);
+      wall[i].drawImage(ctx, iWall);
     }
     // Draw new food
     ctx.strokeStyle = '#f00';
@@ -222,11 +234,9 @@ mainScene.paint = function (ctx) {
     ctx.strokeStyle = '#f00';
     food.drawImage(ctx, iFood);
     // Draw score
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = 'black';
     ctx.textAlign = 'left';
     ctx.fillText('Score: ' + score, 0, 10);
-    // Debug last key pressed
-    //ctx.fillText('Last Press: '+lastPress,0,20);
     // Draw pause
     if (pause) {
       ctx.fillStyle = '#030';
@@ -301,8 +311,12 @@ gameScene.act = function () {
     }
     if (body[0].intersects(food2)) {
       score += 1;
+      food2.x = 280;
+      food2.y = 130;
+      setTimeout(function timer() {
       food2.x = random(canvas.width / 10 - 1) * 10;
-      food2.y = random(canvas.height / 10 - 1) * 10;
+      food2.y = random(canvas.height / 10 - 1) * 10;},
+      Math.random()*10000)
       aEat.play();
       send()
       }
@@ -371,7 +385,7 @@ highscoresScene.act = function () {
     lastPress = null;
   }
 };
-
+// Send score
 function send(score) {
   var url = "https://jsonplaceholder.typicode.com/posts";
   var data = {Score : score , Name : "player" };
@@ -394,29 +408,3 @@ window.addEventListener('load', init, false);
 
 
 
-/*fetch('https://jsonplaceholder.typicode.com/posts', {
-method: 'POST',
-body: JSON.stringify({
-  title: 'foo',
-  body: 'bar',
-  userId: 1,
-}),
-headers: {
-  'Content-type': 'application/json; charset=UTF-8',
-},
-})
-.then((response) => response.json())
-.then((json) => console.log(json))*/
-/*
-var url = 'https://example.com/profile';
-var data = score ;
-
-fetch(url, {
-method: 'POST', // or 'PUT'
-body: JSON.stringify(data), // data can be `string` or {object}!
-headers:{
-  'Content-Type': 'application/json'
-}
-}).then(res => res.json())
-.catch(error => console.error('“Error trying to send the score”', error))
-.then(response => console.log('“Score sent successfully”', response));*/
