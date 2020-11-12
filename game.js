@@ -161,14 +161,6 @@ function init() {
   wall.push(new Rectangle(160, 20, 10, 10));
   wall.push(new Rectangle(100, 110, 10, 10));
   wall.push(new Rectangle(130, 110, 10, 10));
-  wall.push(new Rectangle(290, 140, 10, 10));
-  wall.push(new Rectangle(290, 130, 10, 10));
-  wall.push(new Rectangle(290, 120, 10, 10));
-  wall.push(new Rectangle(280, 120, 10, 10));
-  wall.push(new Rectangle(270, 120, 10, 10));
-  wall.push(new Rectangle(270, 130, 10, 10));
-  wall.push(new Rectangle(270, 140, 10, 10));
-  wall.push(new Rectangle(280, 140, 10, 10));
   // Load saved highscores
   if (localStorage.highscores) {
     highscores = localStorage.highscores.split(',');
@@ -311,8 +303,8 @@ gameScene.act = function () {
     }
     if (body[0].intersects(food2)) {
       score += 1;
-      food2.x = 280;
-      food2.y = 130;
+      food2.x = -10;
+      food2.y = -10;
       setTimeout(function timer() {
       food2.x = random(canvas.width / 10 - 1) * 10;
       food2.y = random(canvas.height / 10 - 1) * 10;},
